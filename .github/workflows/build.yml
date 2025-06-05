@@ -37,6 +37,9 @@ jobs:
         name: gload-linux64
         path: .
 
+    - name: Generate gload.full.h
+      run: chmod +x ./gload-linux64 && ./gload-linux64 9.9 > gload.full.h
+
     - name: Delete old release
       run: gh release delete "latest" --cleanup-tag -y || true
       env:

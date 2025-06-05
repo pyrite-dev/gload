@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: sudo apt-get install -y --no-install-recommends fpc
-    - run: make && cp bin/gload gload-linux64
+    - run: mkdir -p bin obj && make && cp bin/gload gload-linux64
     - uses: actions/upload-artifact@v4
       with:
         name: gload-linux64

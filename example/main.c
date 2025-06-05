@@ -1,3 +1,6 @@
+#ifdef _WIN32
+#define OEMRESOURCE
+#endif
 #define GLOAD_IMPLEMENTATION
 #define RGFW_NO_GL_HEADER
 #define RGFW_IMPLEMENTATION

@@ -17,10 +17,10 @@ var
 	Commands : Array of String;
 	Versions : Array of String;
 	I : Integer;
+	VersionMax : String;
 
 const
 	Prefix : String = 'gload_';
-	VersionMax : String = '1.1';
 
 procedure Add(S : String);
 begin
@@ -195,6 +195,12 @@ begin
 end;
 
 begin
+	VersionMax := '1.1';
+	if ParamCount >= 1 then
+	begin
+		VersionMax := ParamStr(1);
+	end;
+
 	Content := '';
 	SetLength(Commands, 0);
 	SetLength(Versions, 0);

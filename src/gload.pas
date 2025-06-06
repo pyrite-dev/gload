@@ -82,6 +82,7 @@ var
 	Child3 : TDOMNode;
 	ReturnName : String;
 	Args : String;
+	Proto : TDOMNode;
 begin
 	Child := Doc.DocumentElement.FirstChild;
 	while Assigned(Child) do
@@ -98,14 +99,10 @@ begin
 					begin
 						if String(Child2.FindNode('proto').FindNode('name').TextContent) = Name then
 						begin
-							if Assigned(Child2.FindNode('proto').FindNode('ptype')) then
-							begin
-								ReturnName := String(Child2.FindNode('proto').FindNode('ptype').TextContent);
-							end
-							else
-							begin
-								ReturnName := 'void';
-							end;
+							Proto := Child2.FindNode('proto').CloneNode(True);
+							Proto.RemoveChild(Proto.FindNode('name'));
+							ReturnName := String(Proto.TextContent);
+							Proto.Free;
 
 							Args := '';
 
@@ -220,6 +217,9 @@ begin
 	AddLn();
 
 	AddLn('#ifdef _WIN32');
+	AddLn('#ifdef APIENTRY');
+	AddLn('#undef APIENTRY');
+	AddLn('#endif');
 	AddLn('#define APIENTRY __stdcall');
 	AddLn('#endif');
 	AddLn();

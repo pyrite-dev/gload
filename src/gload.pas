@@ -320,8 +320,14 @@ begin
 	AddLn('void ' + Prefix + 'init(void){');
 	AddLn('#ifdef _WIN32');
 	AddLn('	const char* names[] = {"opengl32.dll"};');
+	AddLn('#elif defined(__APPLE__)');
+	AddLn('	const char* names[] = {"../Frameworks/OpenGL.framework/OpenGL", "/Library/Frameworks/OpenGL.framework/OpenGL", "/System/Library/Frameworks/OpenGL.framework/OpenGL", "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL"};');
+	AddLn('#elif defined(__OpenBSD__)');
+	AddLn('	const char* names[] = {"libGL.so", "/usr/X11R6/lib/libGL.so"};');
+	AddLn('#elif defined(__NetBSD__)');
+	AddLn('	const char* names[] = {"libGL.so", "/usr/X11R7/lib/libGL.so"};');
 	AddLn('#else');
-	AddLn('	const char* names[] = {"libGL.so"};');
+	AddLn('	const char* names[] = {"libGL.so", "/usr/local/lib/libGL.so", "/usr/X11/lib/libGL.so"};');
 	AddLn('#endif');
 	AddLn('	int i;');
 	AddLn('	if(' + Prefix + 'gl != NULL) return;');

@@ -2630,8 +2630,14 @@ void* gload_load(const char* name){
 void gload_init(void){
 #ifdef _WIN32
 	const char* names[] = {"opengl32.dll"};
+#elif defined(__APPLE__)
+	const char* names[] = {"../Frameworks/OpenGL.framework/OpenGL", "/Library/Frameworks/OpenGL.framework/OpenGL", "/System/Library/Frameworks/OpenGL.framework/OpenGL", "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL"};
+#elif defined(__OpenBSD__)
+	const char* names[] = {"libGL.so", "/usr/X11R6/lib/libGL.so"};
+#elif defined(__NetBSD__)
+	const char* names[] = {"libGL.so", "/usr/X11R7/lib/libGL.so"};
 #else
-	const char* names[] = {"libGL.so"};
+	const char* names[] = {"libGL.so", "/usr/local/lib/libGL.so", "/usr/X11/lib/libGL.so"};
 #endif
 	int i;
 	if(gload_gl != NULL) return;

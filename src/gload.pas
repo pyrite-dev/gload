@@ -235,7 +235,7 @@ begin
 	AddLn();
 
 	AddLn('#ifndef GLAPIENTRY');
-	AddLn('#define GLAPIENTRY GLAPIENTRY');
+	AddLn('#define GLAPIENTRY APIENTRY');
 	AddLn('#endif');
 	AddLn();
 
@@ -301,6 +301,7 @@ begin
 		AddLn('PFN' + UpperCase(Commands[I]) + 'PROC ' + Prefix + Commands[I] + ';');
 	end;
 	AddLn();
+	AddLn('#include <stdio.h>');
 	AddLn('#include <stddef.h>');
 	AddLn('#ifdef _WIN32');
 	AddLn('#include <windows.h>');
@@ -309,12 +310,21 @@ begin
 	AddLn('#endif');
 	AddLn('static void* ' + Prefix + 'gl = NULL;');
 	AddLn();
+	AddLn('typedef void* (APIENTRYP PFNGLGETPROCADDRESSPROC)(const char* name);');
+	AddLn('PFNGLGETPROCADDRESSPROC ' + Prefix + 'getprocaddress = NULL;');
+	AddLn();
 	AddLn('void* ' + Prefix + 'load(const char* name){');
+	AddLn('	void* r = NULL;');
 	AddLn('#ifdef _WIN32');
-	AddLn('	return GetProcAddress(' + Prefix + 'gl, name);');
+	AddLn('	r = GetProcAddress(' + Prefix + 'gl, name);');
 	AddLn('#else');
-	AddLn('	return dlsym(' + Prefix + 'gl, name);');
+	AddLn('	r = dlsym(' + Prefix + 'gl, name);');
 	AddLn('#endif');
+	AddLn('	if(r == NULL && ' + Prefix + 'getprocaddress != NULL) r = ' + Prefix + 'getprocaddress(name);');
+	AddLn('#ifdef GLOAD_DEBUG');
+	AddLn('	if(r == NULL) fprintf(stderr, "[gload] failed to load %s\n", name);');
+	AddLn('#endif');
+	AddLn('	return r;');
 	AddLn('}');
 	AddLn();
 	AddLn('void ' + Prefix + 'init(void){');
@@ -340,6 +350,13 @@ begin
 	AddLn('		if(' + Prefix + 'gl != NULL) break;');
 	AddLn('	}');
 	AddLn('	if(' + Prefix + 'gl == NULL) return;');
+
+	AddLn('	#ifdef _WIN32');
+	AddLn('	' + Prefix + 'getprocaddress = (PFNGLGETPROCADDRESSPROC)' + Prefix + 'load("wglGetProcAddress");');
+	AddLn('	#else');
+	AddLn('	' + Prefix + 'getprocaddress = (PFNGLGETPROCADDRESSPROC)' + Prefix + 'load("glXGetProcAddress");');
+	AddLn('	#endif');
+
 	for I := 0 to (Length(Commands) - 1) do
 	begin
 		AddLn('	' + Prefix + Commands[I] + ' = (PFN' + UpperCase(Commands[I]) + 'PROC)' + Prefix + 'load("' + Commands[I] + '");');

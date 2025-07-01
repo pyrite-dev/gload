@@ -365,7 +365,7 @@
 #endif
 
 #ifndef GLAPIENTRY
-#define GLAPIENTRY GLAPIENTRY
+#define GLAPIENTRY APIENTRY
 #endif
 
 #ifndef GLAPI
@@ -2614,6 +2614,7 @@ PFNGLINDEXUBVPROC gload_glIndexubv;
 PFNGLPOPCLIENTATTRIBPROC gload_glPopClientAttrib;
 PFNGLPUSHCLIENTATTRIBPROC gload_glPushClientAttrib;
 
+#include <stdio.h>
 #include <stddef.h>
 #ifdef _WIN32
 #include <windows.h>
@@ -2622,12 +2623,21 @@ PFNGLPUSHCLIENTATTRIBPROC gload_glPushClientAttrib;
 #endif
 static void* gload_gl = NULL;
 
+typedef void* (APIENTRYP PFNGLGETPROCADDRESSPROC)(const char* name);
+PFNGLGETPROCADDRESSPROC gload_getprocaddress = NULL;
+
 void* gload_load(const char* name){
+	void* r = NULL;
 #ifdef _WIN32
-	return GetProcAddress(gload_gl, name);
+	r = GetProcAddress(gload_gl, name);
 #else
-	return dlsym(gload_gl, name);
+	r = dlsym(gload_gl, name);
 #endif
+	if(r == NULL && gload_getprocaddress != NULL) r = gload_getprocaddress(name);
+#ifdef GLOAD_DEBUG
+	if(r == NULL) fprintf(stderr, "[gload] failed to load %s\n", name);
+#endif
+	return r;
 }
 
 void gload_init(void){
@@ -2653,6 +2663,11 @@ void gload_init(void){
 		if(gload_gl != NULL) break;
 	}
 	if(gload_gl == NULL) return;
+	#ifdef _WIN32
+	gload_getprocaddress = (PFNGLGETPROCADDRESSPROC)gload_load("wglGetProcAddress");
+	#else
+	gload_getprocaddress = (PFNGLGETPROCADDRESSPROC)gload_load("glXGetProcAddress");
+	#endif
 	gload_glCullFace = (PFNGLCULLFACEPROC)gload_load("glCullFace");
 	gload_glFrontFace = (PFNGLFRONTFACEPROC)gload_load("glFrontFace");
 	gload_glHint = (PFNGLHINTPROC)gload_load("glHint");
